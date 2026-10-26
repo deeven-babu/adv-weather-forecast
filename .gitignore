@@ -1,0 +1,13 @@
+__pycache__/
+instance/
+android/.gradle/
+android/**/build/
+.venv-1/
+.venv/
+venv/
+ml/models/rainfall_model.joblib
+*.pyc
+.pytest_cache/
+
+android/.idea/
+.idea/
