@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ translate('Create account') }} | Weather AI{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <p class="eyebrow">Weather AI / {{ translate('Join') }}</p>
+        <h1>{{ translate('Create your account.') }}</h1>
+        <p class="form-note">{{ translate('Save locations and prepare for personalized weather intelligence.') }}</p>
+        <form class="auth-form" method="post">
+            <label for="name">{{ translate('Name') }}</label>
+            <input id="name" name="name" value="{{ name|default('') }}" required autocomplete="name">
+            <label for="email">{{ translate('Email') }}</label>
+            <input id="email" name="email" type="email" value="{{ email|default('') }}" required autocomplete="email">
+            <label for="password">{{ translate('Password') }}</label>
+            <input id="password" name="password" type="password" minlength="8" required autocomplete="new-password">
+            <label for="confirm_password">{{ translate('Confirm password') }}</label>
+            <input id="confirm_password" name="confirm_password" type="password" minlength="8" required autocomplete="new-password">
+            <button class="button button-primary" type="submit">{{ translate('Create account') }} <span>↗</span></button>
+        </form>
+        <p class="form-link">{{ translate('Already registered?') }} <a href="{{ url_for('login') }}">{{ translate('Log in') }}</a></p>
+    </div>
+</section>
+{% endblock %}

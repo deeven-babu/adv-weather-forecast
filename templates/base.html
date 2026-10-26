@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="AI-powered weather intelligence and multi-hazard awareness.">
+    <title>{% block title %}Weather AI{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='icons/favicon.svg') }}" type="image/svg+xml">
+    <link rel="alternate icon" href="{{ asset_url('icons/favicon.ico') }}">
+    <link rel="manifest" href="{{ url_for('site_manifest') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset_url('css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="page-shell">
+        <header class="site-header">
+            <a class="brand" href="{{ url_for('home') }}" aria-label="{{ translate('Weather AI home') }}">
+                <span class="brand-mark">◌</span>
+                <span class="brand-text">Weather <strong>AI</strong></span>
+            </a>
+            <nav class="main-nav" aria-label="{{ translate('Main navigation') }}">
+                <a href="{{ url_for('home') }}#capabilities">{{ t('nav.home') }}</a>
+                <a href="{{ url_for('home') }}#method">{{ t('nav.how_it_works') }}</a>
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('dashboard') }}">{{ t('nav.dashboard') }}</a>
+                    <a href="{{ url_for('analytics_page') }}">{{ translate('Analytics') }}</a>
+                    <a href="{{ url_for('assistant', city=session.get('selected_city', '')) }}">{{ t('nav.assistant') }}</a>
+                    <a href="{{ url_for('profile') }}">{{ t('nav.profile') }}</a>
+                    <a href="{{ url_for('logout') }}">{{ t('nav.logout') }}</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">{{ t('nav.login') }}</a>
+                    <a href="{{ url_for('register') }}">{{ t('nav.register') }}</a>
+                {% endif %}
+                <label class="language-picker" for="language-select">
+                    <span class="sr-only">{{ t('nav.language') }}</span>
+                    <select id="language-select" data-language-select aria-label="{{ t('nav.language') }}">
+                        <option value="en" {% if current_language == 'en' %}selected{% endif %}>{{ supported_languages['en'] }}</option>
+                        <option value="te" {% if current_language == 'te' %}selected{% endif %}>{{ supported_languages['te'] }}</option>
+                        <option value="hi" {% if current_language == 'hi' %}selected{% endif %}>{{ supported_languages['hi'] }}</option>
+                    </select>
+                </label>
+                <button class="theme-toggle" type="button" aria-label="{{ t('theme.toggle') }}">☼</button>
+            </nav>
+        </header>
+
+        <main class="page-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">{{ translate(message) }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <span>Weather AI</span>
+            <span>{{ translate('Built for clearer decisions in changing weather.') }}</span>
+        </footer>
+    </div>
+    <script>
+        window.weatherI18n = {{ {
+            'loading': t('search.loading'),
+            'assistantLoading': t('chat.loading'),
+            'assistantUnavailable': translate('The assistant is unavailable right now.'),
+            'languageError': translate('Unable to update language'),
+            'invalidMap': translate('That map location is not valid. Please try again.'),
+            'loadingMap': translate('Loading local conditions...'),
+            'unsupportedLocation': translate('Location services are not supported by this browser.'),
+            'requestingLocation': translate('Requesting your location...'),
+            'permissionDenied': translate('Location permission was denied. You can still select a point on the map.'),
+            'locationUnavailable': translate('Your location could not be determined. Please try again or select a point on the map.'),
+            'modeError': translate('Failed to update mode.'),
+            'scenarioLoading': translate('Running simulation...'),
+            'scenarioUnavailable': translate('Simulation unavailable.'),
+            'language': '{{ current_language }}',
+            'voiceListening': translate('Listening...'),
+            'voiceStop': translate('Stop listening'),
+            'voiceStart': translate('Start voice input'),
+            'voiceUnsupported': translate('Voice input is not supported by this browser.'),
+            'voiceDenied': translate('Microphone permission was denied.'),
+            'voiceNoSpeech': translate('No speech was detected. Please try again.'),
+            'voiceError': translate('Voice input failed. Text chat is still available.'),
+            'voiceSpeaking': translate('Reading response aloud...'),
+            'voiceUnavailable': translate('Voice playback is not available on this device.'),
+            'voiceRead': translate('Read response aloud'),
+            'voiceStopSpeaking': translate('Stop reading response'),
+            'humidity': translate('Humidity'),
+            'wind': translate('Wind')
+        }|tojson }};
+    </script>
+    {# app.js is the existing Phase 1-3 script and is unchanged. #}
+    <script src="{{ asset_url('js/app.js') }}" defer></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

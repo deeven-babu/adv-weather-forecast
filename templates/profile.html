@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ translate('Profile') }} | Weather AI{% endblock %}
+{% block content %}
+<section class="profile-page">
+    <div class="profile-card">
+        <p class="eyebrow">Weather AI / {{ translate('Profile') }}</p>
+        <h1>{{ user.name }}</h1>
+        <div class="profile-details">
+            <div><span>{{ translate('Email') }}</span><strong>{{ user.email }}</strong></div>
+            <div><span>{{ translate('Member since') }}</span><strong>{{ user.created_at.strftime('%B %d, %Y') }}</strong></div>
+        </div>
+        <a class="button button-primary" href="{{ url_for('dashboard') }}">{{ translate('Open dashboard') }} <span>↗</span></a>
+    </div>
+
+    <div class="profile-card">
+        <p class="eyebrow">Weather AI / {{ translate('Notifications') }}</p>
+        <h2>{{ translate('Notification preferences') }}</h2>
+        <p class="data-note">
+            {{ translate('These preferences are saved to your account. Email and SMS delivery arrive in a later phase.') }}
+        </p>
+        <p class="data-note">
+            {{ translate('Unread alerts') }}: <strong>{{ unread_alerts }}</strong>
+        </p>
+        <form class="profile-form" method="post" action="{{ url_for('profile') }}">
+            <label class="preference-row">
+                <input type="checkbox" name="email_enabled" value="on" {% if preference.email_enabled %}checked{% endif %}>
+                <span>{{ translate('Email alerts') }}</span>
+            </label>
+            <label class="preference-row">
+                <input type="checkbox" name="sms_enabled" value="on" {% if preference.sms_enabled %}checked{% endif %}>
+                <span>{{ translate('SMS alerts') }}</span>
+            </label>
+            <label class="preference-field">
+                <span>{{ translate('Phone number for SMS') }}</span>
+                <input type="tel" name="phone" value="{{ user.phone or '' }}" placeholder="+919876543210" autocomplete="tel" inputmode="tel">
+            </label>
+            <label class="preference-field">
+                <span>{{ translate('Preferred language') }}</span>
+                <select name="preferred_language">
+                    {% for code, label in supported_languages.items() %}
+                    <option value="{{ code }}" {% if user.preferred_language == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="preference-field">
+                <span>{{ translate('Preferred weather mode') }}</span>
+                <select name="preferred_mode">
+                    {% for mode in supported_modes %}
+                    <option value="{{ mode }}" {% if user.preferred_mode == mode %}selected{% endif %}>{{ t('mode.' + mode) }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <fieldset class="preference-group">
+                <legend>{{ translate('Alert types') }}</legend>
+                {% for alert_type in preference_alert_types %}
+                <label class="preference-row">
+                    <input type="checkbox" name="alert_types" value="{{ alert_type }}" {% if alert_type in selected_alert_types %}checked{% endif %}>
+                    <span>{{ translate(preference_alert_type_labels[alert_type]) }}</span>
+                </label>
+                {% endfor %}
+            </fieldset>
+            <button class="button button-primary" type="submit">{{ translate('Save preferences') }}</button>
+        </form>
+        <div class="delivery-status">
+            <p class="eyebrow">{{ translate('Delivery status') }}</p>
+            <div class="delivery-row">
+                <span>{{ translate('Email') }}</span>
+                <strong class="delivery-{{ 'on' if preference.email_enabled else 'off' }}">
+                    {{ translate('Enabled') if preference.email_enabled else translate('Disabled') }}
+                </strong>
+                {% if delivery_status.email.configured %}
+                <em class="data-note">{{ translate('Server configured') }}</em>
+                {% else %}
+                <em class="data-note">{{ translate('No mail server configured yet') }}</em>
+                {% endif %}
+            </div>
+            <div class="delivery-row">
+                <span>{{ translate('SMS') }}</span>
+                <strong class="delivery-{{ 'on' if preference.sms_enabled else 'off' }}">
+                    {{ translate('Enabled') if preference.sms_enabled else translate('Disabled') }}
+                </strong>
+                {% if delivery_status.sms.configured %}
+                <em class="data-note">{{ translate('Server configured') }}</em>
+                {% else %}
+                <em class="data-note">{{ translate('No SMS provider configured yet') }}</em>
+                {% endif %}
+            </div>
+        </div>
+        <p class="data-note">
+            <a href="{{ url_for('dashboard') }}">{{ translate('View alert history on the dashboard') }} ↗</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

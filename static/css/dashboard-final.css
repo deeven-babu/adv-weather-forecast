@@ -1,0 +1,605 @@
+/* =====================================================================
+   FINAL DASHBOARD DESIGN
+   Loaded after style.css so the new dashboard layout is the last word.
+   Scoped to .dashboard-page, so no other page is affected.
+   ===================================================================== */
+
+.dashboard-page { display: block; }
+
+/* ---- 1. LIVE WEATHER HERO ------------------------------------------ */
+
+.dashboard-hero {
+    display: block;
+    margin: 0 0 22px;
+    padding: 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(150deg, #ffffff 0%, #eaf6ff 52%, #e4f8f4 100%);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.dashboard-hero .hero-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 26px;
+    padding: 28px;
+    align-items: center;
+}
+
+.dashboard-hero .hero-weather { display: grid; gap: 8px; align-content: start; min-width: 0; }
+
+.dashboard-hero .hero-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #146b4d;
+}
+
+.dashboard-hero .hero-location {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.dashboard-hero .hero-country { font-size: 0.88rem; color: var(--muted); font-weight: 500; }
+
+.dashboard-hero .hero-temperature {
+    margin: 2px 0 0;
+    font-size: clamp(3rem, 9vw, 5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--primary-deep);
+}
+
+.dashboard-hero .hero-condition { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--primary); }
+
+.dashboard-hero .hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 10px;
+    margin: 16px 0 0;
+}
+
+.dashboard-hero .metric-card {
+    display: grid;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid var(--line);
+}
+
+.dashboard-hero .metric-card dt {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+}
+
+.dashboard-hero .metric-card dd { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+
+.dashboard-hero .hero-updated { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 0; }
+.dashboard-hero .hero-updated .data-note { text-align: left; }
+
+.dashboard-hero .three-d-card { display: grid; gap: 10px; min-width: 0; }
+
+/* Explicit size so the canvas is always visible. */
+.dashboard-hero .hero-scene,
+#hero-scene {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 340px;
+    min-height: 340px;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    background: radial-gradient(80% 80% at 50% 22%, #14305a, #060d1c);
+}
+
+#hero-scene canvas { display: block; width: 100% !important; height: 100% !important; }
+.dashboard-hero .scene-fallback { height: 100%; }
+.dashboard-hero .source-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.dashboard-hero .source-chip {
+    display: inline-flex;
+    gap: 6px;
+    align-items: baseline;
+    font-size: 0.74rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(29, 145, 214, 0.10);
+    border: 1px solid rgba(29, 145, 214, 0.28);
+    color: var(--primary-deep);
+}
+
+.dashboard-hero .source-chip b { color: var(--ink); font-weight: 600; }
+
+/* ---- 2. RISK OVERVIEW ---------------------------------------------- */
+
+.risk-overview { margin: 0 0 22px; }
+.risk-overview .compact-heading { margin-bottom: 12px; }
+.risk-overview .compact-heading h2 { margin: 0; font-size: 1.5rem; }
+
+.risk-overview .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.risk-overview .risk-card {
+    display: grid;
+    gap: 6px;
+    padding: 18px;
+    border-radius: var(--radius-md);
+    background: var(--surface-strong);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-soft);
+    border-top: 4px solid var(--line);
+}
+
+.risk-overview .risk-flood { border-top-color: #38bdf8; }
+.risk-overview .risk-heat { border-top-color: #ff8d5e; }
+.risk-overview .risk-rain { border-top-color: #a78bfa; }
+
+.risk-overview .risk-name {
+    font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+
+.risk-overview .risk-note { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+/* Level badges (app.js keeps rewriting the level-* classes). */
+.dashboard-page .level {
+    display: inline-block;
+    justify-self: start;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid transparent;
+}
+
+.dashboard-page .level-low { background: rgba(122, 219, 179, 0.18); color: #146b4d; border-color: rgba(122, 219, 179, 0.5); }
+.dashboard-page .level-moderate { background: rgba(255, 191, 105, 0.20); color: #8a5a11; border-color: rgba(255, 191, 105, 0.55); }
+.dashboard-page .level-high { background: rgba(255, 141, 94, 0.20); color: #9a4a1c; border-color: rgba(255, 141, 94, 0.55); }
+.dashboard-page .level-critical { background: rgba(255, 106, 125, 0.20); color: #b8384d; border-color: rgba(255, 106, 125, 0.55); }
+
+/* ---- 3 + 4. ML / FORECAST ------------------------------------------ */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+    margin: 0 0 22px;
+    align-items: start;
+}
+
+.dashboard-grid .ml-card,
+.dashboard-grid .forecast-section { padding: 20px; border-radius: var(--radius-md); }
+.dashboard-grid .compact-heading h2 { margin: 0; font-size: 1.25rem; }
+
+.dashboard-grid .ml-card .ai-rain-card { display: grid; gap: 14px; }
+.dashboard-grid .ml-card .ai-rain-result { display: grid; gap: 4px; justify-items: start; }
+.dashboard-grid .ml-card .ai-rain-value { font-size: 2.6rem; font-weight: 700; line-height: 1; color: var(--primary-deep); }
+.dashboard-grid .ml-card .ai-rain-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+.dashboard-grid .ml-card .ai-rain-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 999px;
+    background: rgba(29, 145, 214, 0.12); color: var(--primary-deep);
+    font-size: 0.8rem; font-weight: 700;
+}
+
+.dashboard-grid .ml-card .ai-rain-factors { display: grid; gap: 6px; }
+
+.dashboard-grid .ml-card .ai-factor {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 7px 10px; border-radius: 10px;
+    background: var(--surface-alt); border: 1px solid var(--line); font-size: 0.82rem;
+}
+
+.dashboard-grid .ml-card .chart-note { margin: 12px 0 0; }
+
+.dashboard-grid .forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.dashboard-grid .forecast-card {
+    display: grid;
+    gap: 3px;
+    padding: 12px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    text-align: center;
+}
+
+.dashboard-grid .forecast-date { font-size: 0.72rem; font-weight: 700; color: var(--primary-deep); }
+.dashboard-grid .forecast-condition { font-size: 0.74rem; color: var(--muted); }
+.dashboard-grid .forecast-temp { font-size: 1rem; color: var(--ink); }
+.dashboard-grid .forecast-rain { font-size: 0.72rem; color: var(--primary); font-weight: 600; }
+
+/* ---- 5. INTELLIGENCE ------------------------------------------------ */
+
+.intelligence-section { margin: 0 0 22px; padding: 20px; border-radius: var(--radius-md); }
+.intelligence-section .compact-heading h2 { margin: 0; font-size: 1.25rem; }
+
+.intelligence-section .mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 14px 0 0;
+}
+
+.intelligence-section .mode-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--surface-alt);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.intelligence-section .mode-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+
+.intelligence-section .mode-card.active {
+    border-color: var(--primary);
+    background: rgba(29, 145, 214, 0.14);
+    color: var(--primary-deep);
+    box-shadow: 0 6px 18px rgba(29, 145, 214, 0.16);
+}
+
+.intelligence-section .mode-icon { font-size: 1rem; color: var(--accent); }
+
+.intelligence-section .intelligence-recommendation {
+    margin: 16px 0 0;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: rgba(126, 231, 217, 0.16);
+    border: 1px solid rgba(126, 231, 217, 0.5);
+    line-height: 1.6;
+    color: var(--ink);
+}
+
+.intelligence-section .intelligence-summary { margin: 12px 0 0; line-height: 1.65; }
+
+.intelligence-section .intelligence-meta {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+}
+
+.intelligence-section .intelligence-meta p { margin: 4px 0 0; line-height: 1.6; }
+
+/* ---- 6. ALERTS ------------------------------------------------------ */
+
+.alert-section { display: grid; gap: 16px; margin: 0 0 22px; }
+.alert-section .card-panel { padding: 20px; border-radius: var(--radius-md); }
+.alert-section .compact-heading h2 { margin: 0; font-size: 1.25rem; }
+.alert-section .alert-card { border-radius: var(--radius-sm); }
+.alert-section .alert-unread { box-shadow: inset 0 0 0 1px rgba(29, 145, 214, 0.28); }
+
+/* ---- 7. ANALYTICS PREVIEW ------------------------------------------ */
+
+.analytics-preview { margin: 0 0 22px; padding: 20px; border-radius: var(--radius-md); }
+.analytics-preview .compact-heading h2 { margin: 0; font-size: 1.25rem; }
+
+.analytics-preview .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 14px 0 0;
+}
+
+.analytics-preview .analytics-card {
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    display: grid;
+    gap: 4px;
+}
+
+.analytics-preview .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.analytics-preview .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--ink); }
+
+.analytics-preview .analytics-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.analytics-preview .chart-card {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+}
+
+.analytics-preview .chart-card h3 { margin: 0 0 8px; font-size: 0.92rem; color: var(--ink); }
+.analytics-preview .chart-holder { position: relative; height: 200px; }
+
+.analytics-preview .chart-empty {
+    display: grid; place-items: center; height: 100%;
+    margin: 0; font-size: 0.85rem; color: var(--muted);
+}
+
+/* ---- MAP + NOTES --------------------------------------------------- */
+
+.dashboard-page .risk-layout { display: grid; grid-template-columns: 1fr; margin: 0 0 22px; }
+.dashboard-page .map-panel { padding: 20px; border-radius: var(--radius-md); }
+.dashboard-page .map-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dashboard-page .map-header h3 { margin: 0; font-size: 1.05rem; }
+.dashboard-page .map-surface { height: 300px; border-radius: var(--radius-sm); overflow: hidden; }
+.dashboard-page .chart-note { font-size: 0.82rem; color: var(--muted); margin: 12px 0 0; line-height: 1.6; }
+
+/* ---- RESPONSIVE ----------------------------------------------------- */
+
+@media (max-width: 1080px) {
+    .dashboard-hero .hero-content { grid-template-columns: 1fr; }
+    .dashboard-hero .hero-scene,
+    #hero-scene { height: 280px; min-height: 280px; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+    .dashboard-hero .hero-content { padding: 20px 16px; gap: 18px; }
+    .dashboard-hero .hero-temperature { font-size: 3rem; }
+    .dashboard-hero .hero-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-hero .hero-scene,
+    #hero-scene { height: 230px; min-height: 230px; }
+    .risk-overview .risk-grid { grid-template-columns: 1fr; }
+    .dashboard-grid .forecast-grid { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); }
+    .intelligence-section .mode-buttons { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+    .analytics-preview .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 420px) {
+    .analytics-preview .stat-grid { grid-template-columns: 1fr; }
+    .dashboard-hero .hero-metrics { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .intelligence-section .mode-card { transition: none; }
+    .intelligence-section .mode-card:hover { transform: none; }
+}
+
+/* =====================================================================
+   PROFESSIONAL POLISH LAYER
+   Typography rhythm, elevation, motion and state refinement.
+   ===================================================================== */
+
+.dashboard-page {
+    --dash-radius: 18px;
+    --dash-gap: 22px;
+    --dash-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* One consistent, quieter card treatment across every section. */
+.dashboard-page .card-panel,
+.dashboard-page .dashboard-hero {
+    border-radius: var(--dash-radius);
+    box-shadow: 0 1px 2px rgba(18, 59, 88, 0.04), 0 8px 24px rgba(18, 59, 88, 0.06);
+    transition: box-shadow 0.3s var(--dash-ease), transform 0.3s var(--dash-ease);
+}
+
+.dashboard-page .card-panel:hover {
+    box-shadow: 0 1px 2px rgba(18, 59, 88, 0.05), 0 14px 34px rgba(18, 59, 88, 0.10);
+}
+
+/* Section headings share one rhythm. */
+.dashboard-page .section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.dashboard-page .section-heading h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+}
+
+.dashboard-page .eyebrow {
+    margin: 0 0 6px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--primary);
+}
+
+/* --- Hero refinement -------------------------------------------------- */
+.dashboard-hero .hero-content { align-items: stretch; }
+.dashboard-hero .hero-weather { padding: 4px 0; }
+
+.dashboard-hero .hero-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    padding: 4px 11px 4px 9px;
+    border-radius: 999px;
+    background: rgba(122, 219, 179, 0.16);
+    border: 1px solid rgba(122, 219, 179, 0.45);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #146b4d;
+    align-self: start;
+    width: fit-content;
+}
+
+.dashboard-hero .hero-temperature { font-variant-numeric: tabular-nums; }
+
+.dashboard-hero .metric-card {
+    transition: border-color 0.25s var(--dash-ease), transform 0.25s var(--dash-ease);
+}
+
+.dashboard-hero .metric-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.dashboard-hero .metric-card dd { font-variant-numeric: tabular-nums; }
+.dashboard-hero .three-d-card { display: grid; grid-template-rows: 1fr auto; gap: 12px; }
+
+/* --- Risk cards: icon, level, explanation, severity meter -------------- */
+.risk-overview .risk-card { position: relative; overflow: hidden; }
+
+.risk-overview .risk-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.85;
+}
+
+.risk-overview .risk-flood { color: #0e7490; }
+.risk-overview .risk-heat { color: #c2410c; }
+.risk-overview .risk-rain { color: #6d28d9; }
+
+.risk-overview .risk-name,
+.risk-overview .risk-note { color: var(--muted); }
+.risk-overview .risk-card .level { color: currentColor; border-color: currentColor; }
+
+.risk-overview .risk-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: currentColor;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.risk-overview .risk-head { display: flex; align-items: center; gap: 10px; }
+
+/* --- Alerts: professional notification centre ------------------------- */
+.alert-section .alert-card {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    padding: 13px 15px 13px 17px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--muted);
+    background: #fff;
+    transition: transform 0.22s var(--dash-ease), box-shadow 0.22s var(--dash-ease);
+}
+
+.alert-section .alert-card:hover { transform: translateX(2px); box-shadow: 0 6px 18px rgba(18, 59, 88, 0.08); }
+.alert-section .alert-card.alert-critical { border-left-color: #dc2626; background: rgba(220, 38, 38, 0.05); }
+.alert-section .alert-card.alert-high { border-left-color: #ea580c; background: rgba(234, 88, 12, 0.05); }
+.alert-section .alert-card.alert-moderate { border-left-color: #d97706; background: rgba(217, 119, 6, 0.06); }
+.alert-section .alert-card.alert-low { border-left-color: #059669; background: rgba(5, 150, 105, 0.05); }
+
+.alert-section .alert-content { margin: 0; gap: 9px; }
+.alert-section .alert-type { font-size: 0.9rem; }
+.alert-section .alert-severity { font-size: 0.64rem; letter-spacing: 0.07em; background: rgba(18, 59, 88, 0.07); color: var(--muted); }
+.alert-section .alert-message { font-size: 0.87rem; }
+.alert-section .alert-unread::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+}
+
+/* --- Forecast: horizontal scroller on wide screens -------------------- */
+.dashboard-grid .forecast-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(104px, 1fr);
+    grid-template-columns: none;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dashboard-grid .forecast-card {
+    scroll-snap-align: start;
+    transition: transform 0.22s var(--dash-ease), border-color 0.22s var(--dash-ease);
+}
+
+.dashboard-grid .forecast-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+.dashboard-grid .forecast-temp { font-variant-numeric: tabular-nums; }
+
+/* --- Intelligence ----------------------------------------------------- */
+.intelligence-section .intelligence-meta { display: grid; gap: 4px; }
+.intelligence-section .intelligence-recommendation { position: relative; padding-left: 18px; }
+
+.intelligence-section .intelligence-recommendation::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+}
+
+/* --- Map -------------------------------------------------------------- */
+.dashboard-page .map-surface { border: 1px solid var(--line); }
+.dashboard-page .map-coordinates strong,
+.dashboard-page .map-meta strong { font-variant-numeric: tabular-nums; }
+
+/* Entrance animation, applied once, staggered by section order. */
+.dashboard-page > * {
+    animation: dashIn 0.5s var(--dash-ease) both;
+}
+
+.dashboard-page > *:nth-child(2) { animation-delay: 0.05s; }
+.dashboard-page > *:nth-child(3) { animation-delay: 0.1s; }
+.dashboard-page > *:nth-child(4) { animation-delay: 0.15s; }
+.dashboard-page > *:nth-child(5) { animation-delay: 0.2s; }
+.dashboard-page > *:nth-child(6) { animation-delay: 0.25s; }
+
+@keyframes dashIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-page > * { animation: none; }
+    .dashboard-page .card-panel,
+    .dashboard-page .alert-section .alert-card,
+    .dashboard-page .forecast-card,
+    .dashboard-page .metric-card { transition: none; }
+    .dashboard-page .alert-section .alert-card:hover,
+    .dashboard-page .forecast-card:hover,
+    .dashboard-page .metric-card:hover { transform: none; }
+}
+

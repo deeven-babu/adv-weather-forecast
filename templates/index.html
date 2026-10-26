@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Weather AI | Weather Intelligence{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy reveal">
+        <p class="eyebrow"><span class="status-dot"></span> {{ translate('Live intelligence, built for the real world') }}</p>
+        <h1>{{ translate('Read the sky') }}<br><em>{{ translate('with clarity.') }}</em></h1>
+        <p class="hero-text">{{ translate('AI-powered weather forecasting and multi-hazard awareness for the moments that matter.') }}</p>
+        <div class="hero-actions">
+            <a class="button button-primary" href="#capabilities">{{ translate('Check the outlook') }} <span>↗</span></a>
+            <a class="button button-quiet" href="#method">{{ translate('Explore the method') }}</a>
+        </div>
+    </div>
+    <div class="hero-visual reveal reveal-delay" aria-label="Abstract weather intelligence visualization">
+        <div class="orbital orbital-one"></div>
+        <div class="orbital orbital-two"></div>
+        <div class="weather-panel">
+            <div class="panel-top"><span>FIELD VIEW / 01</span><span>NOW</span></div>
+            <div class="temperature">28<span>°</span></div>
+            <div class="condition">{{ translate('Partly cloudy') }} <span>◒</span></div>
+            <div class="panel-rule"></div>
+            <div class="metrics"><span>{{ translate('Humidity') }} <b>68%</b></span><span>{{ translate('Wind') }} <b>14 km/h</b></span></div>
+            <div class="signal"><span class="signal-line"></span><span>{{ translate('Atmospheric signal stable') }}</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="capabilities" id="capabilities">
+    <div class="section-heading"><p class="eyebrow">{{ translate('One view, many signals') }}</p><h2>{{ translate('Beyond the forecast.') }}</h2></div>
+    <div class="feature-grid">
+        <article class="feature-card feature-rain"><span class="feature-icon">∿</span><h3>{{ translate('Rainfall prediction') }}</h3><p>{{ translate('Understand precipitation probability with transparent AI signals.') }}</p><span class="card-index">01</span></article>
+        <article class="feature-card feature-flood"><span class="feature-icon">≈</span><h3>{{ translate('Flood risk detection') }}</h3><p>{{ translate('Bring rainfall, conditions, and context into one risk picture.') }}</p><span class="card-index">02</span></article>
+        <article class="feature-card feature-heat"><span class="feature-icon">◉</span><h3>{{ translate('Heatwave awareness') }}</h3><p>{{ translate('See developing heat patterns before they become disruptive.') }}</p><span class="card-index">03</span></article>
+        <article class="feature-card feature-alert"><span class="feature-icon">!</span><h3>{{ translate('Smart alerts') }}</h3><p>{{ translate('Get useful, timely guidance while official warnings stay authoritative.') }}</p><span class="card-index">04</span></article>
+    </div>
+</section>
+
+<section class="method" id="method">
+    <p class="eyebrow">{{ translate('Designed for responsible action') }}</p>
+    <h2>{{ translate('Signals into') }}<br><em>{{ translate('understanding.') }}</em></h2>
+    <p>{{ translate('Weather AI brings live observations and explainable predictions together. It supports your decisions; it never replaces official emergency advisories.') }}</p>
+</section>
+{% endblock %}

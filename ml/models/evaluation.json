@@ -1,0 +1,67 @@
+{
+  "dataset": "C:\\Users\\deeve\\adv_ai_weather\\ml\\data\\weatherAUS.csv",
+  "rows": 140845,
+  "features": [
+    "temperature",
+    "humidity",
+    "pressure",
+    "wind_speed",
+    "precipitation",
+    "cloud_cover"
+  ],
+  "target": "RainTomorrow (Yes=Rain, No=No Rain)",
+  "best_model": "random_forest",
+  "models": {
+    "random_forest": {
+      "accuracy": 0.8188434094217047,
+      "precision": 0.5921762589928058,
+      "recall": 0.6238749407863572,
+      "f1": 0.6076124567474048,
+      "confusion_matrix": [
+        [
+          19115,
+          2721
+        ],
+        [
+          2382,
+          3951
+        ]
+      ],
+      "cv_f1": 0.6042595217772884
+    },
+    "logistic_regression": {
+      "accuracy": 0.763782881891441,
+      "precision": 0.4837039293329272,
+      "recall": 0.7522501184272856,
+      "f1": 0.5888023730070449,
+      "confusion_matrix": [
+        [
+          16751,
+          5085
+        ],
+        [
+          1569,
+          4764
+        ]
+      ],
+      "cv_f1": 0.5888981409175765
+    },
+    "decision_tree": {
+      "accuracy": 0.7725158862579431,
+      "precision": 0.4958831924470304,
+      "recall": 0.7132480656876677,
+      "f1": 0.5850278461339204,
+      "confusion_matrix": [
+        [
+          17244,
+          4592
+        ],
+        [
+          1816,
+          4517
+        ]
+      ],
+      "cv_f1": 0.5776913874772079
+    }
+  }
+}

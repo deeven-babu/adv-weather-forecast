@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ translate('AI weather assistant') }} | Weather AI{% endblock %}
+{% block content %}
+<section class="assistant-page">
+    <div class="assistant-intro">
+        <p class="eyebrow">{{ t('weather.ai') }} / {{ t('weather.live') }}</p>
+        <h1>{{ t('weather.ask_ai') }}</h1>
+        <p>{{ t('weather.conditions') }}</p>
+        <a class="button button-quiet" href="{{ url_for('dashboard', city=selected_city) }}"><span aria-hidden="true">←</span> {{ t('button.back') }}</a>
+    </div>
+
+    <section class="assistant-shell card-panel" aria-labelledby="assistant-title">
+        <div class="assistant-topbar">
+            <div>
+                <p class="eyebrow">{{ t('weather.ai') }}</p>
+                <h2 id="assistant-title">{{ selected_city }}</h2>
+            </div>
+            <span class="assistant-live"><i></i> {{ t('weather.live') }}</span>
+            <button type="button" class="button button-quiet" data-clear-assistant>{{ t('button.clear') }}</button>
+        </div>
+        <div class="assistant-messages" data-assistant-messages aria-live="polite">
+            <div class="chat-message chat-message-assistant">
+                <span class="chat-avatar" aria-hidden="true">◌</span>
+                <p>{{ t('chat.loading') }}</p>
+            </div>
+        </div>
+        <div class="assistant-suggestions" aria-label="{{ translate('Suggested questions') }}">
+            <button type="button" data-question="Will it rain tomorrow?">{{ t('weather.rain_chance') }}</button>
+            <button type="button" data-question="What's today's weather?">{{ t('weather.today') }}</button>
+            <button type="button" data-question="Should I carry an umbrella?">{{ t('weather.recommendations') }}</button>
+            <button type="button" data-question="Explain today's weather">{{ t('weather.current_conditions') }}</button>
+            <button type="button" data-question="Is it safe for outdoor activities?">{{ t('weather.risk_outlook') }}</button>
+        </div>
+        <form class="assistant-form" data-assistant-form>
+            <label class="sr-only" for="assistant-question">{{ t('weather.ask_ai') }}</label>
+            <input id="assistant-question" name="question" placeholder="{{ t('form.question_placeholder') }} {{ selected_city }}..." autocomplete="off" maxlength="500" required>
+            <input type="hidden" name="city" value="{{ selected_city }}">
+            <button class="voice-button" type="button" data-voice-input aria-label="{{ translate('Start voice input') }}" title="{{ translate('Start voice input') }}">
+                <span aria-hidden="true">🎙</span>
+            </button>
+            <button class="button button-primary" type="submit"><span>{{ t('button.ask') }}</span><span aria-hidden="true">↗</span></button>
+        </form>
+        <p class="voice-status" data-voice-status role="status" aria-live="polite"></p>
+        <p class="assistant-disclaimer">{{ t('weather.disclaimer') }}</p>
+    </section>
+
+    <section class="scenario-panel card-panel" aria-labelledby="scenario-title">
+        <p class="eyebrow">{{ translate('Simulation only') }}</p>
+        <h2 id="scenario-title">{{ translate('What-If Weather Scenario') }}</h2>
+        <p>{{ translate('Explore a possible change without changing the live forecast.') }}</p>
+        <form class="scenario-form" data-scenario-form>
+            <label for="scenario-input">{{ translate('Scenario') }}</label>
+            <input id="scenario-input" name="scenario" placeholder="{{ translate('Example: What if rainfall probability becomes 70%?') }}" required maxlength="160">
+            <button class="button button-primary" type="submit">{{ translate('Simulate') }} <span aria-hidden="true">↗</span></button>
+        </form>
+        <div class="scenario-result" data-scenario-result role="status" aria-live="polite"></div>
+    </section>
+</section>
+{% endblock %}

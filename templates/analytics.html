@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}{{ translate('Analytics') }} | Weather AI{% endblock %}
+{% block head %}
+{# Chart.js must execute before analytics.js, so it is listed first. #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+{% endblock %}
+{% block content %}
+<section class="analytics-page" data-analytics-root data-days="{{ analytics_days }}"
+         data-endpoint="{{ url_for('analytics_all_api') }}"
+         data-labels='{{ {
+            "alerts": translate("Alerts"),
+            "temperature": translate("Temperature"),
+            "humidity": translate("Humidity"),
+            "wind": translate("Wind"),
+            "rainProbability": translate("Rain probability"),
+            "byType": translate("Alerts by type"),
+            "bySeverity": translate("Alerts by severity"),
+            "readState": translate("Read / unread"),
+            "noData": translate("No data for this period."),
+            "updated": translate("Last updated"),
+            "loading": translate("Loading analytics..."),
+            "failed": translate("Analytics could not be loaded.")
+         }|tojson }}'>
+
+    <div class="dashboard-heading">
+        <div>
+            <p class="eyebrow">Weather AI / {{ translate('Analytics') }}</p>
+            <h1>{{ translate('Historical analytics') }}</h1>
+        </div>
+        <div class="dashboard-heading-actions">
+            <p class="data-note" data-analytics-updated>{{ translate('Last updated') }}: —</p>
+            <div class="range-picker" role="group" aria-label="{{ translate('Date range') }}">
+                <button type="button" class="range-button {% if analytics_days == 7 %}active{% endif %}" data-range="7">{{ translate('7 days') }}</button>
+                <button type="button" class="range-button {% if analytics_days == 30 %}active{% endif %}" data-range="30">{{ translate('30 days') }}</button>
+                <button type="button" class="range-button {% if analytics_days == 90 %}active{% endif %}" data-range="90">{{ translate('90 days') }}</button>
+                <button type="button" class="range-button {% if analytics_days == 365 %}active{% endif %}" data-range="365">{{ translate('1 year') }}</button>
+            </div>
+        </div>
+    </div>
+
+    <p class="source-note">
+        {{ translate('Three separate systems are shown below and are never combined into one figure.') }}
+    </p>
+
+    <div class="analytics-state" data-analytics-state hidden>
+        <div class="skeleton-grid">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+        </div>
+        <p class="data-note" data-analytics-status>{{ translate('Loading analytics...') }}</p>
+    </div>
+
+    <div class="stat-grid">
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('Weather records') }}</span>
+            <strong class="stat-value" data-stat="weather_records">—</strong>
+        </article>
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('ML predictions') }}</span>
+            <strong class="stat-value" data-stat="predictions">—</strong>
+        </article>
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('Risk assessments') }}</span>
+            <strong class="stat-value" data-stat="risk_assessments">—</strong>
+        </article>
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('Alerts') }}</span>
+            <strong class="stat-value" data-stat="alerts">—</strong>
+        </article>
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('Unread alerts') }}</span>
+            <strong class="stat-value" data-stat="unread_alerts">—</strong>
+        </article>
+        <article class="stat-card card-panel">
+            <span class="stat-label">{{ translate('High-risk events') }}</span>
+            <strong class="stat-value" data-stat="high_risk_events">—</strong>
+        </article>
+    </div>
+
+    <section class="analytics-block card-panel">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="eyebrow">{{ translate('Weather forecast (Open-Meteo)') }}</p>
+                <h2>{{ translate('Observed conditions') }}</h2>
+            </div>
+        </div>
+        <p class="chart-note">{{ translate('Source: Open-Meteo. Not the ML prediction and not the disaster risk.') }}</p>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>{{ translate('Temperature') }}</h3>
+                <div class="chart-holder"><canvas data-chart="weather-temperature"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Humidity') }}</h3>
+                <div class="chart-holder"><canvas data-chart="weather-humidity"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Wind') }}</h3>
+                <div class="chart-holder"><canvas data-chart="weather-wind"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Conditions') }}</h3>
+                <div class="chart-holder"><canvas data-chart="weather-conditions"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analytics-block card-panel">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="eyebrow">{{ translate('ML rainfall prediction (trained model)') }}</p>
+                <h2>{{ translate('Rainfall model output') }}</h2>
+            </div>
+        </div>
+        <p class="chart-note">{{ translate('Source: the trained rainfall model. This is not the weather forecast.') }}</p>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>{{ translate('Rain / no rain') }}</h3>
+                <div class="chart-holder"><canvas data-chart="ml-distribution"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('ML probability bands') }}</h3>
+                <div class="chart-holder"><canvas data-chart="ml-bands"></canvas></div>
+            </div>
+            <div class="chart-card wide">
+                <h3>{{ translate('Rain probability over time') }}</h3>
+                <div class="chart-holder"><canvas data-chart="ml-timeline"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analytics-block card-panel">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="eyebrow">{{ translate('Disaster risk (rule-based engine)') }}</p>
+                <h2>{{ translate('Risk distribution') }}</h2>
+            </div>
+        </div>
+        <p class="chart-note">{{ translate('Source: the rule-based threshold engine, not a machine-learning model.') }}</p>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>{{ translate('Flood') }}</h3>
+                <div class="chart-holder"><canvas data-chart="risk-Flood"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Heatwave') }}</h3>
+                <div class="chart-holder"><canvas data-chart="risk-Heatwave"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Heavy rain') }}</h3>
+                <div class="chart-holder"><canvas data-chart="risk-Heavy-rain"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('All levels') }}</h3>
+                <div class="chart-holder"><canvas data-chart="risk-overall"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="analytics-block card-panel">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="eyebrow">{{ translate('Alert history') }}</p>
+                <h2>{{ translate('Alerts') }}</h2>
+            </div>
+        </div>
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h3>{{ translate('Alerts by type') }}</h3>
+                <div class="chart-holder"><canvas data-chart="alerts-type"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Alerts by severity') }}</h3>
+                <div class="chart-holder"><canvas data-chart="alerts-severity"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>{{ translate('Read / unread') }}</h3>
+                <div class="chart-holder"><canvas data-chart="alerts-read"></canvas></div>
+            </div>
+            <div class="chart-card wide">
+                <h3>{{ translate('Alerts over time') }}</h3>
+                <div class="chart-holder"><canvas data-chart="alerts-timeline"></canvas></div>
+            </div>
+        </div>
+    </section>
+
+    <p class="data-note">
+        <a class="button button-quiet" href="{{ url_for('dashboard') }}">{{ translate('Back to dashboard') }} ↗</a>
+    </p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ asset_url('js/analytics.js') }}" defer></script>
+{% endblock %}

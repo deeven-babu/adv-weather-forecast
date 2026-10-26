@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Weather dashboard | Weather AI{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+{# Three.js must execute before weather3d.js, so it is listed first. #}
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+<script src="{{ asset_url('js/weather3d.js') }}" defer></script>
+{# The final dashboard design is the LAST stylesheet in the cascade, so it
+   always wins over style.css and the Leaflet map styles. #}
+<link rel="stylesheet" href="{{ asset_url('css/dashboard-final.css') }}">
+{% endblock %}
+{% block content %}
+<section class="dashboard-page weather-dashboard">
+    <div class="dashboard-heading">
+        <div>
+            <p class="eyebrow">{{ t('weather.ai') }} / {{ t('weather.live') }}</p>
+            <h1>{{ t('weather.conditions') }}</h1>
+        </div>
+        <div class="dashboard-heading-actions">
+            <p class="data-note">{{ t('weather.live_data') }}<br>{{ t('weather.updated') }}</p>
+            <a class="button button-quiet" href="{{ url_for('assistant', city=searched_city) }}"><span aria-hidden="true">✦</span> {{ t('weather.ask_ai') }}</a>
+        </div>
+    </div>
+
+    <form class="weather-search" method="get" action="{{ url_for('dashboard') }}" data-weather-search data-city="{{ searched_city }}">
+        <div class="search-field-wrap">
+            <span class="search-icon" aria-hidden="true">📍</span>
+            <label class="sr-only" for="city">{{ t('weather.search_label') }}</label>
+            <input id="city" name="city" value="{{ searched_city }}" placeholder="{{ t('weather.search_placeholder') }}" required autocomplete="off">
+        </div>
+        <button class="button button-primary" type="submit">
+            <span class="search-label">{{ t('search.weather') }}</span>
+            <span class="loading-label">{{ t('search.loading') }}</span>
+            <span aria-hidden="true">↗</span>
+        </button>
+    </form>
+
+    {% if weather %}
+        {# Server-rendered risk levels so the badges are correct before JS runs.
+           app.js keeps them in sync from /api/live/weather afterwards. #}
+        {% set risk_levels = assess_risks(weather) %}
+        <!-- ============ 1. LIVE WEATHER HERO ============ -->
+        <section class="dashboard-hero hero-panel card-panel" data-live-root data-live-state="idle"
+                 data-live-endpoint="{{ url_for('live_weather_api') }}"
+                 data-live-city="{{ weather.location.name }}"
+                 data-live-interval="300000">
+            <div class="hero-content">
+                <div class="hero-weather">
+                    <p class="eyebrow hero-live"><span class="live-dot" aria-hidden="true"></span> LIVE</p>
+                    <h2 class="hero-location">
+                        <span data-live="location">{{ weather.location.name }}</span>
+                        <span class="hero-country" data-live="country">{{ weather.location.country }}</span>
+                    </h2>
+                    <p class="hero-temperature"><span data-live="temperature">{{ weather.current.temperature }}°C</span></p>
+                    <p class="hero-condition" data-live="condition">{{ translate(weather.current.condition) }}</p>
+                    <dl class="hero-metrics">
+                        <div class="metric-card"><dt>{{ translate('Humidity') }}</dt><dd data-live="humidity">{{ weather.current.humidity }}%</dd></div>
+                        <div class="metric-card"><dt>{{ translate('Wind') }}</dt><dd data-live="wind">{{ weather.current.wind_speed }} km/h</dd></div>
+                        <div class="metric-card"><dt>{{ translate('Feels like') }}</dt><dd data-live="feels-like">{{ weather.current.feels_like }}°C</dd></div>
+                        <div class="metric-card"><dt>{{ translate('Rain probability') }}</dt><dd data-live="rain-probability">—</dd></div>
+                    </dl>
+                    <p class="hero-updated">
+                        <span data-live-message class="data-note" role="status" hidden></span>
+                        <span class="data-note" data-live="updated">{{ translate('Last updated') }}: —</span>
+                    </p>
+                </div>
+                <div class="three-d-card">
+                    <div class="hero-scene" id="hero-scene" data-scene></div>
+                    <div class="source-row">
+                        <span class="source-chip"><b>{{ translate('Forecast') }}</b> <span data-live="source-weather">Open-Meteo</span></span>
+                        <span class="source-chip"><b>{{ translate('ML') }}</b> <span data-live="source-ml">—</span></span>
+                        <span class="source-chip"><b>{{ translate('Risk') }}</b> <span data-live="source-risk">{{ translate('Rule-based') }}</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ 2. RISK OVERVIEW (rule-based engine) ============ -->
+        <section class="risk-overview" aria-label="{{ translate('Disaster risk (rule-based engine)') }}">
+            <div class="section-heading compact-heading">
+                <div>
+                    <p class="eyebrow">{{ translate('Disaster risk (rule-based engine)') }}</p>
+                    <h2>{{ translate('Weather risk') }}</h2>
+                </div>
+            </div>
+            <div class="risk-grid">
+                <article class="risk-card risk-flood" data-live-level="flood">
+                    <div class="risk-head">
+                        <span class="risk-icon" aria-hidden="true">≈</span>
+                        <span class="risk-name">{{ translate('Flood') }}</span>
+                    </div>
+                    <span class="level level-{{ risk_levels.flood|lower }}" data-live="risk-flood">{{ t('risk.flood') }}</span>
+                    <span class="risk-note">{{ t('risk.flood_note') }}</span>
+                </article>
+                <article class="risk-card risk-heat" data-live-level="heatwave">
+                    <div class="risk-head">
+                        <span class="risk-icon" aria-hidden="true">▲</span>
+                        <span class="risk-name">{{ translate('Heatwave') }}</span>
+                    </div>
+                    <span class="level level-{{ risk_levels.heatwave|lower }}" data-live="risk-heatwave">{{ t('risk.heatwave') }}</span>
+                    <span class="risk-note">{{ t('risk.heatwave_note') }}</span>
+                </article>
+                <article class="risk-card risk-rain" data-live-level="rain">
+                    <div class="risk-head">
+                        <span class="risk-icon" aria-hidden="true">☂</span>
+                        <span class="risk-name">{{ translate('Heavy Rain') }}</span>
+                    </div>
+                    <span class="level level-{{ risk_levels.rain|lower }}" data-live="risk-rain">{{ t('risk.rain') }}</span>
+                    <span class="risk-note">{{ t('risk.rain_note') }}</span>
+                </article>
+            </div>
+        </section>
+
+        <!-- ============ 3. ML PREDICTION + 4. FORECAST ============ -->
+        <section class="dashboard-grid">
+            <article class="ml-card card-panel">
+                <div class="section-heading compact-heading">
+                    <div>
+                        <p class="eyebrow">{{ translate('ML rainfall prediction (trained model)') }}</p>
+                        <h2>AI Rainfall Prediction</h2>
+                    </div>
+                </div>
+                {% if rain_prediction %}
+                <div class="ai-rain-card">
+                    <div class="ai-rain-result">
+                        <span class="ai-rain-label">{{ t('ml.probability') }}</span>
+                        <strong class="ai-rain-value" data-live="ml-probability">{{ rain_prediction.probability_percent }}%</strong>
+                        <span class="ai-rain-badge" data-live="ml-result">{{ translate(rain_prediction.prediction) }}</span>
+                        <span class="data-note">{{ rain_prediction.risk_level }} · {{ rain_prediction.model_name }}</span>
+                    </div>
+                    {% if rain_prediction.factors %}
+                    <div class="ai-rain-factors">
+                        {% for factor in rain_prediction.factors %}
+                        <div class="ai-factor"><span>{{ translate(factor.name) }}</span><span>{{ '%.2f'|format(factor.importance) }}</span></div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="ai-rain-unavailable" data-live="ml-result">—</p>
+                {% endif %}
+                <p class="chart-note">{{ translate('This is the trained rainfall model, not the Open-Meteo forecast.') }}</p>
+            </article>
+
+            <section class="forecast-section card-panel">
+                <div class="section-heading compact-heading">
+                    <div>
+                        <p class="eyebrow">{{ translate('Weather forecast (Open-Meteo)') }}</p>
+                        <h2>{{ translate('Next seven days') }}</h2>
+                    </div>
+                </div>
+                <div class="forecast-grid">
+                    {% for day in weather.forecast %}
+                    <article class="forecast-card">
+                        <span class="forecast-date">{{ day.date }}</span>
+                        <span class="forecast-condition">{{ translate(day.condition) }}</span>
+                        <strong class="forecast-temp">{{ day.temperature_max }}° / {{ day.temperature_min }}°</strong>
+                        <span class="forecast-rain">{{ translate('Rain probability') }} {{ day.rain_probability }}%</span>
+                    </article>
+                    {% endfor %}
+                </div>
+            </section>
+        </section>
+
+        <!-- ============ 5. WEATHER INTELLIGENCE (modes) ============ -->
+        <section class="intelligence-section card-panel">
+            <div class="section-heading compact-heading">
+                <div>
+                    <p class="eyebrow">{{ t('weather.how_use') }}</p>
+                    <h2>{{ t('weather.select_mode') }}</h2>
+                </div>
+            </div>
+            <div class="mode-buttons">
+                <button type="button" class="mode-card mode-button {% if user_mode == 'general' %}active{% endif %}" data-mode="general" aria-label="{{ t('mode.general') }}"><span class="mode-icon" aria-hidden="true">◈</span><span>{{ t('mode.general') }}</span></button>
+                <button type="button" class="mode-card mode-button {% if user_mode == 'farmer' %}active{% endif %}" data-mode="farmer" aria-label="{{ t('mode.farmer') }}"><span class="mode-icon" aria-hidden="true">◈</span><span>{{ t('mode.farmer') }}</span></button>
+                <button type="button" class="mode-card mode-button {% if user_mode == 'travel' %}active{% endif %}" data-mode="travel" aria-label="{{ t('mode.travel') }}"><span class="mode-icon" aria-hidden="true">◈</span><span>{{ t('mode.travel') }}</span></button>
+                <button type="button" class="mode-card mode-button {% if user_mode == 'daily_commute' %}active{% endif %}" data-mode="daily_commute" aria-label="{{ t('mode.daily_commute') }}"><span class="mode-icon" aria-hidden="true">◈</span><span>{{ t('mode.daily_commute') }}</span></button>
+                <button type="button" class="mode-card mode-button {% if user_mode == 'outdoor_activity' %}active{% endif %}" data-mode="outdoor_activity" aria-label="{{ t('mode.outdoor_activity') }}"><span class="mode-icon" aria-hidden="true">◈</span><span>{{ t('mode.outdoor_activity') }}</span></button>
+            </div>
+            {% if recommendation %}
+            <p class="intelligence-recommendation">{{ recommendation }}</p>
+            {% endif %}
+            {% if summary %}
+            <p class="summary-text intelligence-summary">{{ summary }}</p>
+            {% endif %}
+            <div class="intelligence-meta" data-best-time>
+                <span class="stat-label">{{ t('weather.best_time') }}</span>
+                <p data-best-time-text>{{ best_time }}</p>
+            </div>
+        </section>
+
+        <!-- ============ 6. ALERTS ============ -->
+        <section class="alert-section" aria-label="{{ translate('Alerts') }}">
+            {% if alerts %}
+            <div class="card-panel alert-live-panel">
+                <div class="section-heading compact-heading">
+                    <div>
+                        <p class="eyebrow">{{ translate('Current conditions') }}</p>
+                        <h2>{{ t('weather.alerts') }}</h2>
+                    </div>
+                </div>
+                <div class="alerts-list">
+                    {% for alert in alerts %}
+                    <div class="alert-card alert alert-{{ alert.severity|lower }}">
+                        <div class="alert-content">
+                            <strong class="alert-type">{{ translate(alert.type) }}</strong>
+                            <span class="alert-severity">{{ translate(alert.severity) }}</span>
+                        </div>
+                        <p class="alert-message">{{ translate(alert.message) }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card-panel alert-history-panel" data-alert-history>
+                <div class="section-heading compact-heading">
+                    <div>
+                        <p class="eyebrow">{{ translate('Saved alerts') }}</p>
+                        <h2>{{ translate('Alert history') }}</h2>
+                    </div>
+                    <p class="data-note">{{ translate('Unread alerts') }}: <strong data-unread-count>{{ unread_alerts }}</strong></p>
+                </div>
+                {% if stored_alerts %}
+                <div class="alerts-list">
+                    {% for stored in stored_alerts %}
+                    <div class="alert-card alert alert-{{ stored.severity|lower if stored.severity else 'moderate' }}{% if not stored.is_read %} alert-unread{% endif %}" data-alert-id="{{ stored.id }}">
+                        <div class="alert-content">
+                            <strong class="alert-type">{{ stored.alert_type }}</strong>
+                            <span class="alert-severity">{{ stored.severity or 'Moderate' }}</span>
+                            <span class="alert-severity">{{ translate('Unread') if not stored.is_read else translate('Read') }}</span>
+                        </div>
+                        <p class="alert-message">{{ stored.message }}</p>
+                        <p class="data-note">{{ stored.created_at.strftime('%b %d, %Y %H:%M') }} UTC{% if stored.location %} · {{ stored.location.name }}{% endif %}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <form method="post" action="{{ url_for('dashboard_mark_all_alerts_read') }}" class="alerts-actions">
+                    <button class="button button-quiet" type="submit">{{ translate('Mark all as read') }}</button>
+                </form>
+                {% else %}
+                <p class="data-note">{{ translate('No saved alerts yet. Alerts appear here when weather conditions change.') }}</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- ============ 7. ANALYTICS PREVIEW ============ -->
+        <section class="analytics-preview card-panel" data-analytics-preview>
+            <div class="section-heading compact-heading">
+                <div>
+                    <p class="eyebrow">{{ translate('Historical analytics') }}</p>
+                    <h2>{{ translate('Analytics preview') }}</h2>
+                </div>
+                <a class="button button-quiet" href="{{ url_for('analytics_page') }}">{{ translate('Open analytics') }} ↗</a>
+            </div>
+            <div class="stat-grid">
+                <article class="analytics-card stat-card"><span class="stat-label">{{ translate('Weather records') }}</span><strong class="stat-value" data-stat="weather_records">—</strong></article>
+                <article class="analytics-card stat-card"><span class="stat-label">{{ translate('ML predictions') }}</span><strong class="stat-value" data-stat="predictions">—</strong></article>
+                <article class="analytics-card stat-card"><span class="stat-label">{{ translate('Risk assessments') }}</span><strong class="stat-value" data-stat="risk_assessments">—</strong></article>
+                <article class="analytics-card stat-card"><span class="stat-label">{{ translate('Alerts') }}</span><strong class="stat-value" data-stat="alerts">—</strong></article>
+            </div>
+            <div class="chart-grid analytics-charts">
+                <div class="chart-card">
+                    <h3>{{ translate('Risk distribution') }}</h3>
+                    <div class="chart-holder"><canvas data-chart="preview-risk"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>{{ translate('Alerts by severity') }}</h3>
+                    <div class="chart-holder"><canvas data-chart="preview-alerts"></canvas></div>
+                </div>
+            </div>
+            <p class="chart-note">{{ translate('Forecast, ML prediction and rule-based risk are counted separately and never merged.') }}</p>
+        </section>
+
+        <!-- Map detail -->
+        <section class="risk-layout">
+            <aside class="map-panel card-panel">
+                <div class="map-header">
+                    <h3>{{ translate('Explore on the map') }}</h3>
+                    <button class="button button-quiet" type="button" data-locate-me>
+                        <span aria-hidden="true">⌖</span> {{ translate('Use my location') }}
+                    </button>
+                </div>
+                <div
+                    class="map-surface leaflet-map"
+                    id="weather-map"
+                    aria-label="{{ translate('Interactive map for selected location') }}"
+                    data-latitude="{{ weather.location.latitude }}"
+                    data-longitude="{{ weather.location.longitude }}"
+                    data-location-name="{{ weather.location.name }}"
+                    data-location-country="{{ weather.location.country }}"
+                    data-condition-label="{{ translate(weather.current.condition) }}"
+                    data-weather='{{ weather|tojson }}'
+                ></div>
+                <p class="map-status" role="status" aria-live="polite"></p>
+                <p class="map-hint">{{ translate('Select anywhere on the map to explore local conditions.') }}</p>
+                <div class="map-coordinates">
+                    <span>{{ translate('Selected location') }}</span>
+                    <strong>{{ weather.location.name }}{% if weather.location.country %}, {{ weather.location.country }}{% endif %}</strong>
+                </div>
+                <div class="map-meta">
+                    <div>
+                        <span>{{ translate('Coordinates') }}</span>
+                        <strong>{{ weather.location.latitude|round(2) }}, {{ weather.location.longitude|round(2) }}</strong>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    {% else %}
+        <div class="weather-empty card-panel">
+            <strong>{{ translate('Weather unavailable') }}</strong>
+            <span>{{ translate('Search for a city to load its live conditions.') }}</span>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ asset_url('js/analytics.js') }}" defer></script>
+{% endblock %}
